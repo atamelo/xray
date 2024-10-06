@@ -1,0 +1,16 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: custom-nginx-full
+    container_name: custom-nginx-full
+    volumes:
+      - /etc/letsencrypt/live/metallo.work/fullchain.pem:/keys/fullchain.pem:ro
+      - /etc/letsencrypt/live/metallo.work/privkey.pem:/keys/privkey.pem:ro
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./conf/default_server.conf:/etc/nginx/sites-enabled/default:ro
+      - ./conf/http_servers.conf:/etc/nginx/conf.d/http_servers.conf:ro
+      - ./conf/tls_stream_server.conf:/etc/nginx/modules-enabled/tls_stream_server.conf:ro
+      - ./logs/:/var/log/nginx
+    network_mode: host

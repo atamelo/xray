@@ -1,0 +1,165 @@
+{
+    "log": {
+        "loglevel": "info"
+    },
+    "inbounds": [
+        {
+            "port": 51800,
+            "protocol": "dokodemo-door",
+            "settings": {
+                "address": "192.168.1.190", // WG Server
+                "port": 51800,
+                "show": "true"
+		,
+                "network": "udp,tcp"
+            },
+            "show": "true",
+            "tag": "wg-in"
+        }
+	,
+        {
+            "port": 12345,
+            "protocol": "dokodemo-door",
+            "settings": {
+               "network": "tcp,udp",
+               "followRedirect": true
+            },
+            "streamSettings": {
+               "sockopt": {
+                  "tproxy": "tproxy"
+               }
+            },
+            "tag": "tproxy-in"
+         }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom",
+            "settings": {},
+            "tag": "direct"
+        },
+        {
+            "protocol": "vless",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "REDACTED",
+                        "port": 443,
+                        "users": [
+                            {
+                                "encryption": "none",
+                                "flow": "xtls-rprx-vision-udp443", // for QUICK
+                                "id": "REDACTED"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "realitySettings": {
+                    "fingerprint": "chrome",
+                    "publicKey": "REDACTED",
+                    "serverName": "REDACTED",
+                    "shortId": "",
+                    "show": false
+                },
+                "security": "reality"
+		#,
+		#"sockopt": {
+	        #    "dialerProxy": "fragment",
+          	#    "tcpNoDelay": true
+	        #}
+            },
+            "tag": "vless-tunnel"
+        },
+
+      {
+        "mux": {
+          "concurrency": -1,
+          "enabled": false,
+          "xudpConcurrency": 8,
+          "xudpProxyUDP443": "skip"
+        },
+        "protocol": "vless",
+        "settings": {
+          "vnext": [
+            {
+              "address": "REDACTED",
+              "port": 443,
+              "users": [
+                {
+                  "encryption": "none",
+                  "flow": "",
+                  "id": "REDACTED",
+                  "level": 8,
+                  "security": "auto"
+                }
+              ]
+            }
+          ]
+        },
+        "streamSettings": {
+          "network": "ws",
+          "security": "tls",
+          "sockopt": {
+            "dialerProxy": "fragment",
+            "tcpNoDelay": true
+          },
+          "tlsSettings": {
+            "allowInsecure": false,
+            "alpn": [
+              "h2",
+              "http/1.1"
+            ],
+            "fingerprint": "chrome",
+            "publicKey": "",
+            "serverName": "REDACTED",
+            "shortId": "",
+            "show": false,
+            "spiderX": ""
+          },
+          "wsSettings": {
+            "headers": {
+              "Host": ""
+            },
+            "path": "/REDACTED"
+          }
+        },
+        "tag": "vless-ws-tunnel"
+      },
+   {
+      "protocol": "freedom",
+      "settings": {
+        "fragment": {
+          "length": "10-30",
+          "packets": "tlshello",
+          "interval": "2-8"
+        },
+        "userLevel": 8
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "",
+        "sockopt": {
+          "tcpNoDelay": true
+        }
+      },
+      "tag": "fragment"
+    }
+    ],
+    "routing": {
+        "rules": [
+            {
+                "type": "field",
+                "inboundTag": ["wg-in"],
+                "outboundTag": "vless-tunnel"
+            },
+            {
+                "type": "field",
+                "inboundTag": "tproxy-in",
+                "outboundTag": "vless-tunnel"
+            }
+        ]
+    }
+}
