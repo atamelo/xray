@@ -1,0 +1,8 @@
+iptables -t mangle -N XRAY_DNS_CATCH
+iptables -t mangle -A XRAY_DNS_CATCH -p udp -d 1.1.1.1 --dport 53 -j MARK --set-mark 0x01
+iptables -t mangle -A XRAY_DNS_CATCH -p udp -d 1.0.0.1 --dport 53 -j MARK --set-mark 0x01
+iptables -t mangle -A OUTPUT -j XRAY_DNS_CATCH
+
+iptables -t mangle -N XRAY_DNS_REDIRECT
+iptables -t mangle -A XRAY_DNS_REDIRECT -p udp -m mark --mark 0x01 -j TPROXY --on-port 12345 --tproxy-mark 0x01/0x01
+iptables -t mangle -A PREROUTING -j XRAY_DNS_REDIRECT
