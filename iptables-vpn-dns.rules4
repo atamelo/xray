@@ -1,3 +1,12 @@
+# The following commands set up redirection of DNS traffic from the router's clients into the tunnel.
+# Clients are supposed to be configuread with the router's address as their DNS server.
+# The upstream DNS of the local router's DNS server (AdGuard/dsnmasq) is set to 1.1.1.1/1.0.0.1;
+# We need to first catch in the OUTPUT chain it and set a mark - when seeing a marked packet the system will know
+# that the packet needs to be put throught the PREROUTING chain where we redirect it to the TPROXY that further
+# sends the packet into the tunnel
+# (note that the router itself uses DNS server set on it WAN or WWAN interfaces - 9.9.9.9/9.9.9.10
+# and so its DNS queries are not redirected)
+
 iptables -t mangle -N XRAY_DNS_CATCH
 iptables -t mangle -A XRAY_DNS_CATCH -p udp -d 1.1.1.1 --dport 53 -j MARK --set-mark 0x01
 iptables -t mangle -A XRAY_DNS_CATCH -p udp -d 1.0.0.1 --dport 53 -j MARK --set-mark 0x01
