@@ -1,11 +1,26 @@
 {
     "log": {
-      "loglevel": "info"
+      "loglevel": "warning",
+      "dnsLog": true
     },
+# the DNS section is mandatory if you want to set up dns interception
+  "dns": {
+    "servers": [
+      "66.66.66.66", # a fake address
+      {
+        "address": "8.8.8.8", #we route to google only when resolving dmain names from this config - e.g. CloudFlare WARP
+        "port": 53,
+        "domains": ["domain:cloudflareclient.com"]
+      }
+    ],
+    "disableFallback": true,
+    "disableFallbackIfMatch": true # it is importand to turn it off, oterwise DNS requests will be sent not only to the fake 66.66.66.66 but also to 8.8.8.8
+  },
     "inbounds": [
      {
         "port": 8086,
         "listen": "127.0.0.1",
+        #"listen": "@vless-ws",
         "protocol": "vless",
         "tag": "ws-in",
         "settings": {
@@ -115,6 +130,19 @@
       {
         "protocol": "blackhole",
         "tag": "block"
+      },
+      {
+        "protocol": "dns",
+        "tag": "dns-out",
+        "settings": {
+          "network": "udp",
+          "address": "9.9.9.9", # overriding dns queries to always go to quad9
+          "port": 53,
+          "nonIPQuery": "skip"
+        },
+        "proxySettings": {
+          "tag": "warp" # redirecting dns traffic into the warp tunnel
+        }
       }
     ],
     "routing": {
@@ -133,9 +161,27 @@
         ,
         {
           "type": "field",
+          "ip": "8.8.8.8",
+          "outboundTag": "direct" # if it's a DNS query from XRAY, we let it out vai direct
+        },
+        {
+          "type": "field",
+          "network": "udp", # all remaining dns traffic will be redirected
+          "port": 53,
+          "outboundTag": "dns-out"
+        }
+        ,
+        {
+          "type": "field",
           "user": ["user2"],
           "outboundTag": "direct"
         }
+	,
+	{
+	   "type": "field",
+	   "domain": ["habr.com"],
+           "outboundTag": "warp"
+	}
         ,
         {
           "type": "field",
