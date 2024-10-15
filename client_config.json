@@ -38,14 +38,12 @@
             "settings": {
                 "address": "192.168.1.190", // WG Server
                 "port": 51800,
-                "show": false
-		,
+                "show": false,
                 "network": "udp,tcp"
             },
             "show": "true",
             "tag": "wg-in"
-        }
-	,
+        },
         {
             "port": 12345,
             "protocol": "dokodemo-door",
@@ -81,8 +79,11 @@
                         "users": [
                             {
                                 "encryption": "none",
-                                "flow": "xtls-rprx-vision-udp443", // for QUICK
-                                "id": "REDACTED"
+                                "flow": "xtls-rprx-vision-udp443",
+                                #"id": "REDACTED"
+                                "id": "REDACTED",
+                                "level": 8,
+                                "security": "auto"
                             }
                         ]
                     }
@@ -97,18 +98,15 @@
                     "shortId": "",
                     "show": false
                 },
-                "security": "reality"
-		,
-		"sockopt": {
-	            #"dialerProxy": "fragment",
-                    "domainStrategy": "UseIP" # needed to use the custom DNS
-                    ,
-          	    "tcpNoDelay": true
-	        }
+                "security": "reality",
+                "sockopt": {
+                  "dialerProxy": "fragment",
+                  "domainStrategy": "UseIP", # needed to use the custom DNS
+                  "tcpNoDelay": true
+                }
             },
             "tag": "vless-tunnel"
         },
-
       {
         "mux": {
           "concurrency": -1,
@@ -210,5 +208,19 @@
                "outboundTag": "direct"
             }
         ]
+    },
+    "policy": {
+      "levels": {
+        "8": {
+          "connIdle": 300,
+          "downlinkOnly": 1,
+          "handshake": 4,
+          "uplinkOnly": 1
+        }
+      },
+      "system": {
+        "statsOutboundUplink": true,
+        "statsOutboundDownlink": true
+      }
     }
 }
