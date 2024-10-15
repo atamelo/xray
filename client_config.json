@@ -4,7 +4,8 @@
         "dnsLog": false
     },
     "dns": {
-      # we want to use user-define DNSs for domain name resolution
+      # we want to use the following DNSs for domain name resolution
+      # not the system's ones
        "servers": [
          { 
            "address": "9.9.9.10",
