@@ -1,15 +1,43 @@
 {
     "log": {
-        "loglevel": "info"
+        "loglevel": "warning",
+        "dnsLog": false
     },
+    "dns": {
+      # we want to use user-define DNSs for domain name resolution
+       "servers": [
+         { 
+           "address": "9.9.9.10",
+           "port": 53,
+           "domains": ["domain:<REDACTED>"],
+           "queryStrategy": "UseIPv4"
+         }
+       ]
+       ,
+       "disableFallback": true,
+       "disableFallbackIfMatch": true,
+       "disableCache": false,
+       "queryStrategy": "UseIPv4"
+     },
     "inbounds": [
+        {
+            "tag": "socks-in",
+            "listen": "127.0.0.1",
+            "port": "1080",
+            "protocol": "socks",
+            "settings": {
+                "auth": "noauth",
+                "udp": true,
+                "ip": "127.0.0.1"
+            }
+        },
         {
             "port": 51800,
             "protocol": "dokodemo-door",
             "settings": {
                 "address": "192.168.1.190", // WG Server
                 "port": 51800,
-                "show": "true"
+                "show": false
 		,
                 "network": "udp,tcp"
             },
@@ -39,6 +67,10 @@
             "tag": "direct"
         },
         {
+          "protocol": "blackhole",
+          "tag": "block"
+        },
+        {
             "protocol": "vless",
             "settings": {
                 "vnext": [
@@ -65,11 +97,13 @@
                     "show": false
                 },
                 "security": "reality"
-		#,
-		#"sockopt": {
-	        #    "dialerProxy": "fragment",
-          	#    "tcpNoDelay": true
-	        #}
+		,
+		"sockopt": {
+	            #"dialerProxy": "fragment",
+                    "domainStrategy": "UseIP" # needed to use the custom DNS
+                    ,
+          	    "tcpNoDelay": true
+	        }
             },
             "tag": "vless-tunnel"
         },
@@ -135,12 +169,15 @@
           "length": "10-30",
           "packets": "tlshello",
           "interval": "2-8"
-        },
+        }
+        ,
+        "domainStrategy": "UseIPv4", # needed to use the custom DNS
         "userLevel": 8
       },
       "streamSettings": {
         "network": "tcp",
-        "security": "",
+        "security": ""
+        ,
         "sockopt": {
           "tcpNoDelay": true
         }
@@ -159,6 +196,17 @@
                 "type": "field",
                 "inboundTag": "tproxy-in",
                 "outboundTag": "vless-tunnel"
+            }
+            ,
+            {
+                "type": "field",
+                "inboundTag": "socks-in",
+                "outboundTag": "vless-tunnel"
+            },
+            {
+               "type": "field",
+               "ip": "9.9.9.10",
+               "outboundTag": "direct"
             }
         ]
     }
