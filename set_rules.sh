@@ -1,3 +1,5 @@
+grep -qxF '100 vpn' /etc/iproute2/rt_tables || echo '100 vpn' >> /etc/iproute2/rt_tables
+
 # config rule
 #        option priority '100'
 #        option lookup 'vpn'
