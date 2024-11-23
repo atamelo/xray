@@ -15,3 +15,13 @@ iptables -t mangle -A OUTPUT -j XRAY_DNS_CATCH;
 iptables -t mangle -N XRAY_DNS_REDIRECT;
 iptables -t mangle -A XRAY_DNS_REDIRECT -p udp -m mark --mark 1 -j TPROXY --on-port 12345 --tproxy-mark 1;
 iptables -t mangle -A PREROUTING -j XRAY_DNS_REDIRECT;
+
+# Below is an attempt to add DNS interception to always use local server no matter the DNS address a user/program may want to use.
+# As is it doesn't work with the XRAY setup above as it looks like by the time NAT PREROUTING get to run, the routing decision for e.g. 8.8.8.8
+# (or any other external DNS that we want to intercept and override) has already been made - as it's not a local address (which are configured
+# to be ignored in the XRAY chain) - it'll be sent to the XRAY tunnel and that breaks all the logic.
+# iptables -t mangle -A XRAY -m mark --mark 0x2 -j RETURN;
+# iptables -t nat -N DNS_PROCESSING
+# iptables -t nat -A DNS_PROCESSING -p udp --dport 53 -j MARK --set-mark 0x2
+# iptables -t nat -A DNS_PROCESSING -p udp --dport 53 -j DNAT --to-destination 192.168.22.1:53
+# iptables -t nat -A PREROUTING -i br-lan -p udp --dport 53 -j DNS_PROCESSING
