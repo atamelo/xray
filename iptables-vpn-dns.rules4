@@ -7,11 +7,11 @@
 # (note that the router itself uses DNS server set on it WAN or WWAN interfaces - 9.9.9.9/9.9.9.10
 # and so its DNS queries are not redirected)
 
-iptables -t mangle -N XRAY_DNS_CATCH
-iptables -t mangle -A XRAY_DNS_CATCH -p udp -d 1.1.1.1 --dport 53 -j MARK --set-mark 0x01
-iptables -t mangle -A XRAY_DNS_CATCH -p udp -d 1.0.0.1 --dport 53 -j MARK --set-mark 0x01
-iptables -t mangle -A OUTPUT -j XRAY_DNS_CATCH
+iptables -t mangle -N XRAY_DNS_CATCH;
+iptables -t mangle -A XRAY_DNS_CATCH -p udp -d 1.1.1.1 --dport 53 -j MARK --set-mark 1;
+iptables -t mangle -A XRAY_DNS_CATCH -p udp -d 1.0.0.1 --dport 53 -j MARK --set-mark 1;
+iptables -t mangle -A OUTPUT -j XRAY_DNS_CATCH;
 
-iptables -t mangle -N XRAY_DNS_REDIRECT
-iptables -t mangle -A XRAY_DNS_REDIRECT -p udp -m mark --mark 0x01 -j TPROXY --on-port 12345 --tproxy-mark 0x01/0x01
-iptables -t mangle -A PREROUTING -j XRAY_DNS_REDIRECT
+iptables -t mangle -N XRAY_DNS_REDIRECT;
+iptables -t mangle -A XRAY_DNS_REDIRECT -p udp -m mark --mark 1 -j TPROXY --on-port 12345 --tproxy-mark 1;
+iptables -t mangle -A PREROUTING -j XRAY_DNS_REDIRECT;
