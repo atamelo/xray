@@ -20,7 +20,7 @@
      {
         "port": 8086,
         "listen": "127.0.0.1",
-        #"listen": "@vless-ws",
+        #"listen": "@vless-ws", # useful for fallbacks - "fallbacks": [ { "path": "/vlws", "dest": "@vless-ws", "xver": 2 } ]
         "protocol": "vless",
         "tag": "ws-in",
         "settings": {
