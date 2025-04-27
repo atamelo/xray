@@ -1,3 +1,4 @@
+# server config for reality
 {
   "log": {
     "loglevel": "info"
