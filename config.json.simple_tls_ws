@@ -1,3 +1,4 @@
+# sample server config with no reverse proxy in front of xray
 {
   "log": {
     "loglevel": "info"
