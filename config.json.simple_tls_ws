@@ -1,0 +1,145 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "listen": "192.168.1.166",
+      "port": 443,
+      "protocol": "vless",
+      "tag": "reality-in",
+      "settings": {
+        "clients": [
+          {
+            "id": "<>",
+            "email": "user1",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none",
+         "fallbacks": [
+             {
+                 "path": "/<>",
+                 "dest": "@vless-ws"
+                 ,
+                 "xver": 1
+             },
+             {
+                 "dest": 3000
+             }
+         ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+             "alpn": [
+                 "http/1.1"
+             ],
+             "certificates": [
+                 {
+                     "certificateFile": "/opt/gitea/data/keys/fullchain.pem",
+                     "keyFile": "/opt/gitea/data/keys/privkey.pem"
+                 }
+             ]
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
+      }
+    },
+    {
+      # "port": 8086,
+      # "listen": "127.0.0.1",
+      "listen": "@vless-ws",
+      "protocol": "vless",
+      "tag": "ws-in",
+      "settings": {
+        "clients": [
+          {
+            "id": "<>",
+            "email": "user1"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "none",
+        "wsSettings": {
+          "acceptProxyProtocol": true,
+          "path": "<>" # note: no leading '/'
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "quic",
+          "http",
+          "tls"
+        ]
+      }
+  }
+  ],
+  "outbounds": [
+    {
+      "protocol": "wireguard",
+      "tag": "warp",
+      "settings": {
+        "secretKey": "<>",
+        "address": [
+          "172.16.0.2/32",
+          "2606:4700:110:8130:7b85:4242:1f59:6db1/128"
+        ],
+        "peers": [
+          {
+            "endpoint": "engage.cloudflareclient.com:2408",
+            "publicKey": "<>"
+          }
+        ],
+        "mtu": 1280,
+        "workers": 2,
+        "domainStrategy": "ForceIP"
+      }
+    },
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    }
+  ],
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "protocol": "bittorrent",
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "ip": "192.168.0.0/16",
+        "outboundTag": "block"
+      }
+      ,
+      {
+        "type": "field",
+        "domain": ["geosite:openai", "geosite:category-gov-ru", "domain:ru"],
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "ip": ["geoip:ru"],
+        "outboundTag": "block"
+      }
+    ],
+    "domainStrategy": "IPIfNonMatch"
+  }
+}
