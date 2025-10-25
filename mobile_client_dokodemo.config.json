@@ -1,0 +1,90 @@
+{
+    "log": {
+        "loglevel": "debug"
+    },
+    "inbounds": [
+        {
+            "port": 51800,
+            "protocol": "dokodemo-door",
+            "settings": {
+                "address": "<wg_server_address_on_the_target_lan>",
+                "port": 51800,
+                "show": "true",
+                "network": "udp"
+            },
+            "show": "true",
+            "tag": "wg"
+        }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom",
+            "settings": {},
+            "tag": "direct"
+        },
+        {
+            "protocol": "vless",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "metallo.work",
+                        "port": 443,
+                        "users": [
+                            {
+                                "encryption": "none",
+                                "flow": "xtls-rprx-vision",
+                                "id": "<>"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "realitySettings": {
+                    "fingerprint": "chrome",
+                    "publicKey": "<>",
+                    "serverName": "<>",
+                    "shortId": "",
+                    "show": false
+                },
+                "security": "reality",
+ "sockopt": {
+          "dialerProxy": "fragment",
+          "tcpNoDelay": true
+        }
+            },
+            "tag": "vless-tunnel"
+        },
+   {
+      "protocol": "freedom",
+      "settings": {
+        "fragment": {
+          "length": "10-30",
+          "packets": "tlshello",
+          "interval": "2-8"
+        },
+        "userLevel": 8
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "",
+        "sockopt": {
+          "tcpNoDelay": true
+        }
+      },
+      "tag": "fragment"
+    }
+    ],
+    "routing": {
+        "rules": [
+            {
+                "type": "field",
+                "inboundTag": [
+                    "wg"
+                ],
+                "outboundTag": "vless-tunnel"
+            }
+        ]
+    }
+}
