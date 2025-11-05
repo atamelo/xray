@@ -31,17 +31,17 @@
     },
     "inbounds": [
         {
-            "listen": "<>",
+            "listen": "<SERVER_EXTERNAL_IP>",
             "port": 443,
             "protocol": "vless",
             "tag": "reality-in",
             "settings": {
                 "clients": [
                     {
-                        "id": "<>",
+                        "id": "<USER_ID>",
                         "email": "user-one"
                          #,
-                        #"flow": "xtls-rprx-vision"
+                        #"flow": "xtls-rprx-vision" # vision doesn't work behind a CDN ?
                     }
                 ],
                 "decryption": "none",
@@ -89,7 +89,7 @@
             "settings": {
                 "clients": [
                     {
-                        "id": "<>",
+                        "id": "<USER_ID>",
                         "email": "user-one"
                     }
                 ],
