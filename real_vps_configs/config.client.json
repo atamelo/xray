@@ -1,0 +1,226 @@
+{
+    "log": {
+        "loglevel": "warning",
+        "dnsLog": false
+    },
+    "dns": {
+       "servers": [
+         {
+           "address": "9.9.9.10",
+           "port": 53,
+           "domains": ["domain:<USED_DOMAIN>"],
+           "queryStrategy": "UseIPv4"
+         }
+       ]
+       ,
+       "disableFallback": true,
+       "disableFallbackIfMatch": true,
+       "disableCache": false,
+       "queryStrategy": "UseIPv4"
+     },
+    "inbounds": [
+        {
+            "tag": "socks-in",
+            "listen": "127.0.0.1",
+            "port": "1080",
+            "protocol": "socks",
+            "settings": {
+                "auth": "noauth",
+                "udp": true,
+                "ip": "127.0.0.1"
+            }
+        },
+        {
+            "port": 51800,
+            "protocol": "dokodemo-door",
+            "settings": {
+                "address": "<LOCAL_WG_SERVER_ADDRESS>",
+                "port": 51800,
+                "show": false
+                ,
+                "network": "udp,tcp"
+            },
+            "show": "true",
+            "tag": "wg-in"
+        }
+        ,
+        {
+            "port": 12345,
+            "protocol": "dokodemo-door",
+            "settings": {
+               "network": "tcp,udp",
+               "followRedirect": true
+            },
+            "streamSettings": {
+               "sockopt": {
+                  "tproxy": "tproxy"
+               }
+            },
+            "tag": "tproxy-in"
+         }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom",
+            "settings": {},
+            "tag": "direct"
+        },
+        {
+          "protocol": "blackhole",
+          "tag": "block"
+        },
+        {
+            "protocol": "vless",
+            "settings": {
+                "vnext": [
+                    {
+                        "address": "<XRAY_SERVER_IP>",
+                        "port": 443,
+                        "users": [
+                            {
+                                "encryption": "none",
+                                "flow": "xtls-rprx-vision-udp443",
+                                "id": "<USER_ID>",
+                                "level": 8,
+                                "security": "auto"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "streamSettings": {
+                "network": "tcp",
+                "realitySettings": {
+                    "fingerprint": "chrome",
+                    "publicKey": "<GENERATED_PUBLIC_KEY>",
+                    "serverName": "github.com",
+                    "shortId": "",
+                    "show": false
+                },
+                "security": "reality"
+                ,
+                "sockopt": {
+                    "dialerProxy": "fragment",
+                    "domainStrategy": "UseIP",
+                    "tcpNoDelay": true
+                }
+            },
+            "tag": "vless-tunnel"
+        },
+
+      {
+        "mux": {
+          "concurrency": -1,
+          "enabled": false,
+          "xudpConcurrency": 8,
+          "xudpProxyUDP443": "skip"
+        },
+        "protocol": "vless",
+        "settings": {
+          "vnext": [
+            {
+              "address": "WS_PROXY_ADDRESS(E.G. A DOMAIN NAME BEHIND CDN)",
+              "port": 443,
+              "users": [
+                {
+                  "encryption": "none",
+                  "flow": "",
+                  "id": "<USER_ID>",
+                  "level": 8,
+                  "security": "auto"
+                }
+              ]
+            }
+          ]
+        },
+        "streamSettings": {
+          "network": "ws",
+          "security": "tls",
+          "sockopt": {
+            "dialerProxy": "fragment",
+            "tcpNoDelay": true
+          },
+          "tlsSettings": {
+            "allowInsecure": false,
+            "alpn": [
+              "h2",
+              "http/1.1"
+            ],
+            "fingerprint": "chrome",
+            "publicKey": "",
+            "serverName": "SNI_SERVER_NAME",
+            "shortId": "",
+            "show": false,
+            "spiderX": ""
+          },
+          "wsSettings": {
+            "headers": {
+              "Host": ""
+            },
+            "path": "/<SECRET_PATH>"
+          }
+        },
+        "tag": "vless-ws-tunnel"
+      },
+   {
+      "protocol": "freedom",
+      "settings": {
+        "fragment": {
+          "length": "10-30",
+          "packets": "tlshello",
+          "interval": "2-8"
+        },
+        "domainStrategy": "UseIPv4",
+        "userLevel": 8
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": ""
+        ,
+        "sockopt": {
+          "tcpNoDelay": true
+        }
+      },
+      "tag": "fragment"
+    }
+    ],
+    "routing": {
+        "rules": [
+            {
+                "type": "field",
+                "inboundTag": ["wg-in"],
+                "outboundTag": "vless-tunnel"
+            },
+            {
+                "type": "field",
+                "inboundTag": "tproxy-in",
+                "outboundTag": "vless-tunnel"
+            }
+            ,
+            {
+                "type": "field",
+                "inboundTag": "socks-in",
+                "outboundTag": "vless-tunnel"
+            },
+            {
+               "type": "field",
+               "ip": "9.9.9.10", #so that the used domain name resolution bypesses the tunnel
+               "outboundTag": "direct"
+            }
+        ]
+    },
+    "policy": {
+      "levels": {
+        "8": {
+          "connIdle": 300,
+          "downlinkOnly": 1,
+          "handshake": 4,
+          "uplinkOnly": 1
+        }
+      },
+      "system": {
+        "statsOutboundUplink": true,
+        "statsOutboundDownlink": true
+      }
+    }
+}
